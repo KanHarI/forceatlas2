@@ -582,11 +582,11 @@ static CYTHON_INLINE void * PyThread_tss_get(Py_tss_t *key) {
   #define __Pyx_PyUnicode_READY(op)       (0)
   #define __Pyx_PyUnicode_GET_LENGTH(u)   PyUnicode_GET_SIZE(u)
   #define __Pyx_PyUnicode_READ_CHAR(u, i) ((Py_UCS4)(PyUnicode_AS_UNICODE(u)[i]))
-  #define __Pyx_PyUnicode_MAX_CHAR_VALUE(u)   ((sizeof(Py_UNICODE) == 2) ? 65535 : 1114111)
-  #define __Pyx_PyUnicode_KIND(u)         (sizeof(Py_UNICODE))
+  #define __Pyx_PyUnicode_MAX_CHAR_VALUE(u)   ((sizeof(wchar_t) == 2) ? 65535 : 1114111)
+  #define __Pyx_PyUnicode_KIND(u)         (sizeof(wchar_t))
   #define __Pyx_PyUnicode_DATA(u)         ((void*)PyUnicode_AS_UNICODE(u))
-  #define __Pyx_PyUnicode_READ(k, d, i)   ((void)(k), (Py_UCS4)(((Py_UNICODE*)d)[i]))
-  #define __Pyx_PyUnicode_WRITE(k, d, i, ch)  (((void)(k)), ((Py_UNICODE*)d)[i] = ch)
+  #define __Pyx_PyUnicode_READ(k, d, i)   ((void)(k), (Py_UCS4)(((wchar_t*)d)[i]))
+  #define __Pyx_PyUnicode_WRITE(k, d, i, ch)  (((void)(k)), ((wchar_t*)d)[i] = ch)
   #define __Pyx_PyUnicode_IS_TRUE(u)      (0 != PyUnicode_GET_SIZE(u))
 #endif
 #if CYTHON_COMPILING_IN_PYPY
@@ -819,12 +819,12 @@ static CYTHON_INLINE PyObject* __Pyx_PyUnicode_FromString(const char*);
 #define __Pyx_PyByteArray_FromCString(s)   __Pyx_PyByteArray_FromString((const char*)s)
 #define __Pyx_PyStr_FromCString(s)     __Pyx_PyStr_FromString((const char*)s)
 #define __Pyx_PyUnicode_FromCString(s) __Pyx_PyUnicode_FromString((const char*)s)
-static CYTHON_INLINE size_t __Pyx_Py_UNICODE_strlen(const Py_UNICODE *u) {
-    const Py_UNICODE *u_end = u;
+static CYTHON_INLINE size_t __Pyx_wchar_t_strlen(const wchar_t *u) {
+    const wchar_t *u_end = u;
     while (*u_end++) ;
     return (size_t)(u_end - u - 1);
 }
-#define __Pyx_PyUnicode_FromUnicode(u)       PyUnicode_FromUnicode(u, __Pyx_Py_UNICODE_strlen(u))
+#define __Pyx_PyUnicode_FromUnicode(u)       PyUnicode_FromUnicode(u, __Pyx_wchar_t_strlen(u))
 #define __Pyx_PyUnicode_FromUnicodeAndLength PyUnicode_FromUnicode
 #define __Pyx_PyUnicode_AsUnicode            PyUnicode_AsUnicode
 #define __Pyx_NewRef(obj) (Py_INCREF(obj), obj)
@@ -10370,7 +10370,7 @@ static PyObject *__pyx_tp_new_3fa2_7fa2util_Node(PyTypeObject *t, CYTHON_UNUSED 
 
 static void __pyx_tp_dealloc_3fa2_7fa2util_Node(PyObject *o) {
   #if CYTHON_USE_TP_FINALIZE
-  if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
+  if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !PyObject_GC_IsTracked(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
   }
   #endif
@@ -10577,7 +10577,7 @@ static PyObject *__pyx_tp_new_3fa2_7fa2util_Edge(PyTypeObject *t, CYTHON_UNUSED 
 
 static void __pyx_tp_dealloc_3fa2_7fa2util_Edge(PyObject *o) {
   #if CYTHON_USE_TP_FINALIZE
-  if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
+  if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !PyObject_GC_IsTracked(o))) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
   }
   #endif
@@ -10731,7 +10731,7 @@ static PyObject *__pyx_tp_new_3fa2_7fa2util_Region(PyTypeObject *t, CYTHON_UNUSE
 static void __pyx_tp_dealloc_3fa2_7fa2util_Region(PyObject *o) {
   struct __pyx_obj_3fa2_7fa2util_Region *p = (struct __pyx_obj_3fa2_7fa2util_Region *)o;
   #if CYTHON_USE_TP_FINALIZE
-  if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && !_PyGC_FINALIZED(o)) {
+  if (unlikely(PyType_HasFeature(Py_TYPE(o), Py_TPFLAGS_HAVE_FINALIZE) && Py_TYPE(o)->tp_finalize) && !PyObject_GC_IsTracked(o)) {
     if (PyObject_CallFinalizerFromDealloc(o)) return;
   }
   #endif
@@ -14603,7 +14603,8 @@ bad:
                 unsigned char *bytes = (unsigned char *)&val;
                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
                                               bytes, sizeof(val),
-                                              is_little, !is_unsigned);
+                                              is_little, !is_unsigned,
+                                              1);
                 Py_DECREF(v);
                 if (likely(!ret))
                     return val;
@@ -14799,7 +14800,7 @@ raise_neg_overflow:
                 unsigned char *bytes = (unsigned char *)&val;
                 int ret = _PyLong_AsByteArray((PyLongObject *)v,
                                               bytes, sizeof(val),
-                                              is_little, !is_unsigned);
+                                              is_little, !is_unsigned, 1);
                 Py_DECREF(v);
                 if (likely(!ret))
                     return val;
